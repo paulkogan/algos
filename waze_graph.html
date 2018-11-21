@@ -76,27 +76,26 @@
 </head>
 <body>
 <center>
-	  <br>
-		<b> W A Z E   G R A P H </b> <br>
-						<div id="findBestRouteButtonDiv" style="display:inline">
-									<button id="findBestRoute" onClick="findBestRoute(0)">Find Best Route</button>
-				    </div>
+<br><b> W A Z E   G R A P H </b> <br>
+<div id="findBestRouteButtonDiv" style="display:inline">
+<button id="findBestRoute" onClick="findBestRoute(0)">Find Best Route</button>
+</div>
 
-						<div id="startTurnbyTurnButtonDiv" style="display:none">
-									<button onClick="startTurnbyTurn(0)">Turn By Turn</button>
-						</div>
+<div id="startTurnbyTurnButtonDiv" style="display:none">
+<button onClick="startTurnbyTurn(0)">Turn By Turn</button>
+</div>
 
-					 <div id="nextTurnButtonDiv" style="display:none">
-								 <button onClick="nextRouteTurn()">Next Turn</button>
-					 </div>
+<div id="nextTurnButtonDiv" style="display:none">
+<button onClick="nextRouteTurn()">Next Turn</button>
+</div>
 
 
-						<div id="clearPathsButtonDiv" style="display:inline">
-											<button onClick="clearPaths()">Clear Graph</button>
-				    </div>
-
-		<div id="label"> Click on nodes to add paths. Combine paths into routes. Make at least one route from Green to Red. </div>
-		<table id="mainTable" border=0>
+<div id="clearPathsButtonDiv" style="display:inline">
+<button onClick="clearPaths()">Clear Graph</button>
+</div>
+<br>
+<div id="label" style="display:inline;text-align:right">Click on nodes to add paths. Combine paths into routes. Make at least one route from Green to Red. </div>
+<table id="mainTable" border=0>
 			<tr>
 						<td width="10%"></td>
 						<td width="30%" valign ="top" class="logCell">
@@ -107,38 +106,38 @@
 					  </td>
 			 </tr>
 
-	</table>
+</table>
 </center>
+v. 4.2 DFS
+
 
 <script type='text/javascript'>
-  const W = 600;
-	const H = 700;
-  const nodes = []
-	const queue = []
-	const visited = []
-	const START_NODE = 0
-  const NUMBER_NODES = 64
-  const NODES_PER_ROW = 8
-	const X_START = 50
-	const Y_START = 50
-	const NODE_DIAM = Math.floor(300/NODES_PER_ROW)
-  const LINEEND_DIAM = 5
-	const NODE_SPACER =  Math.floor(120/NODES_PER_ROW)
+const W = 600;
+const H = 700;
+const nodes = []
+const queue = []
+const visited = []
+const START_NODE = 0
+const NUMBER_NODES = 64
+const NODES_PER_ROW = 8
+const X_START = 50
+const Y_START = 50
+const NODE_DIAM = Math.floor(300/NODES_PER_ROW)
+const LINEEND_DIAM = 5
+const NODE_SPACER =  Math.floor(120/NODES_PER_ROW)
 
-  const STANDARD_BORDER_COLOR = "blue"
-	const STANDARD_FILL_COLOR = "lightslategrey";
-	const VISITED_BORDER_COLOR = "green"
-  const VISITED_FILL_COLOR = "yellow"
-	const DEADEND_BORDER_COLOR = "green"
-  const Q_BORDER_COLOR = "yellow"
-  const Q_FILL_COLOR = "lightslategrey";
-	const BEST_PATH_COLOR = "red"
-	let nodeClicked = null
-	let numNodesChecked = -1
-	let destination = NUMBER_NODES-1
-	let actionLog = " -- "
-
-
+const STANDARD_BORDER_COLOR = "blue";
+const STANDARD_FILL_COLOR = "lightslategrey";
+const VISITED_BORDER_COLOR = "green";
+const VISITED_FILL_COLOR = "yellow";
+const DEADEND_BORDER_COLOR = "green";
+const Q_BORDER_COLOR = "yellow";
+const Q_FILL_COLOR = "lightslategrey";
+const BEST_PATH_COLOR = "red";
+let nodeClicked = null
+let numNodesChecked = -1
+let destination = NUMBER_NODES-1
+let actionLog = " -- "
 
 
 function nextRouteTurn () {
@@ -210,7 +209,7 @@ function nextRouteTurn () {
 					for (var path of nodes[current].paths) {
 										if(!visited.includes(path.destNode)) {
 														queue.push(path.destNode)
-														nodes[path.destNode].parent = current
+														if (!nodes[path.destNode].parent) nodes[path.destNode].parent = current
 														nodes[path.destNode].fill=Q_FILL_COLOR
 														nodes[path.destNode].border=Q_BORDER_COLOR
 														actionLog += current+" is adding "+path.destNode+" to the Q<br>"
@@ -291,7 +290,7 @@ function findBestRoute(nodeNum) {
 										border: STANDARD_BORDER_COLOR,
 										fill: STANDARD_FILL_COLOR,
                     paths: [],
-										parent: "--"
+										parent: null
 								}
 								//starting node for route
 								if (i==0) {
@@ -318,13 +317,21 @@ function findBestRoute(nodeNum) {
 	 							let currentNode = nodes[current]
 	 							console.log(" Cs paths are "+JSON.stringify(currentNode.paths))
 
+								//use findIndex instead of indexOf to pass in a CB function
 	 							let toParentPathIndex = currentNode.paths.findIndex(path => {
 	 								          console.log(current+" path dest is  "+path.destNode+"<br>")
 	 													return path.destNode === currentNode.parent
 	 							})
 	 							console.log("toParentPathIndex "+toParentPathIndex)
+								currentNode.paths[toParentPathIndex].color=BEST_PATH_COLOR
 
-	 							currentNode.paths[toParentPathIndex].color=BEST_PATH_COLOR
+								//change color of the path going in the other direction
+								let parentNode = nodes[currentNode.parent]
+								let fromParentPathIndex = parentNode.paths.findIndex(path => {
+														return path.destNode === current
+								})
+	 							parentNode.paths[fromParentPathIndex].color=BEST_PATH_COLOR
+
 
 	 							bestRouteLen += 1
 	 							console.log("Walking back from "+current+" to "+currentNode.parent+" len="+bestRouteLen)
