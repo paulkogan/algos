@@ -39,16 +39,6 @@
  	   }
 
 
-
-.holderDiv {
-    display: block;
-    text-align: center;
-		width: 100%;
-		margin:0px auto;
-		border: 0px solid red;
-}
-
-
 .canvasCell {
 		padding:0;
 		margin:0;
@@ -108,7 +98,7 @@
 
 </table>
 </center>
-v. 4.2 DFS
+bfs v. 4.4 array log
 
 
 <script type='text/javascript'>
@@ -117,6 +107,7 @@ const H = 700;
 const nodes = []
 const queue = []
 const visited = []
+const logArray = []
 const START_NODE = 0
 const NUMBER_NODES = 64
 const NODES_PER_ROW = 8
@@ -135,10 +126,20 @@ const Q_BORDER_COLOR = "yellow";
 const Q_FILL_COLOR = "lightslategrey";
 const BEST_PATH_COLOR = "red";
 let nodeClicked = null
-let numNodesChecked = -1
+let numNodesChecked = 0
 let destination = NUMBER_NODES-1
-let actionLog = " -- "
 
+
+function printActionLog() {
+			 let output = "";
+
+       for (let i=0; i< logArray.length; i++) {
+	      			output += logArray[i]+"<br>"
+			 }
+
+			 document.getElementById('actionLog').innerHTML = output;
+
+}
 
 function nextRouteTurn () {
 					//get current off the queue
@@ -153,22 +154,24 @@ function nextRouteTurn () {
 
 
 					//process current node
-					actionLog += "<br><u>Processing Node  "+current+"                   &nbsp;</u><br>"
+					let actionLog = ""
+					actionLog += "<u>Processing Node  "+current+"                   &nbsp;</u><br>"
 					numNodesChecked +=1
 
 					if (current === destination) {
 										let bestRouteLen = countBestRoute(current)
 										document.getElementById('label').innerHTML = " Found Destination after checking "+numNodesChecked+" nodes. Shortest route has "+bestRouteLen+" segments."
-										actionLog += "Found Destination <br>"
+										actionLog += "<font color='red'>Found Destination!</font><br>"
 										actionLog += "Parent is "+nodes[current].parent+" <br>"
-										actionLog += "Shortest route has "+bestRouteLen+" <br>"
 										actionLog += " Q is ["+queue.toString()+"] <br>"
 										actionLog += " V is ["+visited.toString()+"] <br>"
-										document.getElementById('actionLog').innerHTML = actionLog
+
+										logArray.push(actionLog)
+										printActionLog()
+
 										nodes[current].fill="red"
 										nodes[current].border=STANDARD_BORDER_COLOR
 										queue.length = 0
-
 
 										//when done, reset buttons
 										document.getElementById('startTurnbyTurnButtonDiv').style.display = "none";
@@ -185,24 +188,6 @@ function nextRouteTurn () {
 					nodes[current].border = VISITED_BORDER_COLOR
 
 
-					// //show dead ends
-					// let pathsAlreadyVisited = 0
-					// nodes[current].paths.forEach(path => {
-					// 		if (visited.includes(path.destNode)) {
-					// 					//actionLog += "Discarding path: "+current+" to "+ path.destNode +"<br>"
-					// 					pathsAlreadyVisited +=1
-					// 		}
-					// })
-					//
-					//
-					// if (pathsAlreadyVisited == nodes[current].paths.length) {
-					// 				actionLog += current +" is a dead end <br>"
-					// 				nodes[current].border = DEADEND_BORDER_COLOR
-					//
-					// } else {
-					// 				nodes[current].border = VISITED_BORDER_COLOR
-					//
-					// }
 
 
 					//add all current's paths to the queue
@@ -220,8 +205,8 @@ function nextRouteTurn () {
 					actionLog += " Q is ["+queue.toString()+"] <br>"
 					actionLog += " V is ["+visited.toString()+"] <br>"
 					actionLog += " Parent is "+nodes[current].parent+" <br>"
-
-					document.getElementById('actionLog').innerHTML = actionLog
+					logArray.push(actionLog)
+					printActionLog()
 
 
 } //nextRouteTurn
@@ -231,7 +216,10 @@ function nextRouteTurn () {
 
 function startTurnbyTurn (nodeNum) {
       document.getElementById('label').innerHTML = "--"
-			actionLog = "Starting node is 0<br> Destination node is "+destination+" <br>"
+			//clear logArray
+			logArray.length=0
+			let actionLog = "Here we go! Starting node is 0<br> Destination node is "+destination+" <br>"
+
 			//add the starting node to the queue
 			queue.push(nodeNum)
 
@@ -240,8 +228,8 @@ function startTurnbyTurn (nodeNum) {
 			document.getElementById('nextTurnButtonDiv').style.display = "inline";
 	    document.getElementById('findBestRouteButtonDiv').style.display = "none";
 		 	document.getElementById('startTurnbyTurnButtonDiv').style.display = "none";
-
-			nextRouteTurn()
+			logArray.push(actionLog)
+			printActionLog()
 
 } //findRoute function
 
@@ -250,16 +238,19 @@ function startTurnbyTurn (nodeNum) {
 
 function findBestRoute(nodeNum) {
 			document.getElementById('label').innerHTML = "--"
-			actionLog = "Starting node is 0<br> Destination node is "+destination+" <br>"
+
 			//add the starting node to the queue
 			queue.push(nodeNum)
 
+			let actionLog = "Starting node is 0<br> Destination node is "+destination+" <br>"
+			logArray.push(actionLog)
+
+
 			while ( queue.length >0)  {
 								nextRouteTurn ()
-
 			}
 
-			//when done
+			//when done reset buttons
 			document.getElementById('startTurnbyTurnButtonDiv').style.display = "none";
 			document.getElementById('nextTurnButtonDiv').style.display = "none";
 
@@ -427,8 +418,9 @@ function findBestRoute(nodeNum) {
 
      queue.length = 0
 		 visited.length = 0
+		 logArray.length =0
 		 nodeClicked = null
-		 actionLog = " "
+		 //actionLog = " "
 		 document.getElementById('actionLog').innerHTML = "";
 		 redraw()
 	 } //clearPaths
@@ -474,6 +466,27 @@ function findBestRoute(nodeNum) {
 
 
 			} //drawnodes
+
+
+			// //show dead ends
+			// let pathsAlreadyVisited = 0
+			// nodes[current].paths.forEach(path => {
+			// 		if (visited.includes(path.destNode)) {
+			// 					//actionLog += "Discarding path: "+current+" to "+ path.destNode +"<br>"
+			// 					pathsAlreadyVisited +=1
+			// 		}
+			// })
+			//
+			//
+			// if (pathsAlreadyVisited == nodes[current].paths.length) {
+			// 				actionLog += current +" is a dead end <br>"
+			// 				nodes[current].border = DEADEND_BORDER_COLOR
+			//
+			// } else {
+			// 				nodes[current].border = VISITED_BORDER_COLOR
+			//
+			// }
+
 
 
 			</script>
