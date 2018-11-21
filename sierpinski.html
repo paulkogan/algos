@@ -1,0 +1,69 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>P5 Sierpinski Triangle</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.6/addons/p5.dom.js"></script>
+
+</head>
+<body>
+<center>	
+<div id="holdSlider"></div>
+<br>
+<div id="holdCanvas"></div>
+</center>
+
+<script type='text/javascript'>
+// setup variables
+var w = 800;
+var h = 600;
+
+let diameter = 300
+function setup(){
+	createCanvas(w, h);
+    slider = createSlider(0,1600,100)
+    slider.parent('holdSlider'); 
+
+
+} //setup
+
+function draw() {
+
+		background(0);
+		stroke(255);
+		noFill()
+  	    diameter=slider.value()
+ 	    makeFractalCircle(w/2,h/2,diameter)  
+
+}
+
+
+
+
+function makeFractalCircle (x,y,d) {
+
+  	   ellipse(x,y,d)
+
+  	   if (d>2) {
+				makeFractalCircle (x+d*.5,y,d*0.6)
+				//makeFractalCircle (x-d*.5,y,d*0.6)
+				makeFractalCircle (x,y+d*.5,d*0.5)
+				//makeFractalCircle (x,y-d*.5,d*0.5)
+
+  	   }
+
+
+  }
+
+
+
+
+
+
+</script>
+</center>
+</body>
+</html>
+

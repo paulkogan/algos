@@ -1,0 +1,475 @@
+<html>
+<head>
+	<title>Waze Graph</title>
+	<script src= "https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+
+	<script src= "http://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.6/addons/p5.dom.js"></script>
+	<style type="text/css">
+
+
+		body {
+		  text-align: center;
+		  font-family: "Palatino Linotype", "Book Antiqua", "Palatino", "serif";
+		  font-size: 110%;
+		  margin: auto;
+		}
+
+
+
+		button {
+		    background-color: white;
+		    border: 2px solid black;
+		    color: black;
+		    padding: 6px 12px;
+		    text-align: center;
+		    display: inline-block;
+		    font-size: 16px;
+		    margin: 8px;
+		    cursor: pointer;
+		}
+
+		button:focus {
+			outline:0;
+	   }
+
+		 button:disabled {
+       color: grey;
+			 cursor: auto;
+			 border: 1px solid grey;;
+ 	   }
+
+
+
+.holderDiv {
+    display: block;
+    text-align: center;
+		width: 100%;
+		margin:0px auto;
+		border: 0px solid red;
+}
+
+
+.canvasCell {
+		padding:0;
+		margin:0;
+		border: 2px solid blue
+
+
+}
+
+.logCell {
+		padding:10;
+		margin: 0;
+		border: 2px solid blue
+
+
+}
+
+
+#mainTable {
+		border-collapse: collapse;
+		border-spacing: 2;
+		border: 0px solid blue;
+}
+
+		</style>
+</head>
+<body>
+<center>
+	  <br>
+		<b> W A Z E   G R A P H </b> <br>
+						<div id="findBestRouteButtonDiv" style="display:inline">
+									<button id="findBestRoute" onClick="findBestRoute(0)">Find Best Route</button>
+				    </div>
+
+						<div id="startTurnbyTurnButtonDiv" style="display:none">
+									<button onClick="startTurnbyTurn(0)">Turn By Turn</button>
+						</div>
+
+					 <div id="nextTurnButtonDiv" style="display:none">
+								 <button onClick="nextRouteTurn()">Next Turn</button>
+					 </div>
+
+
+						<div id="clearPathsButtonDiv" style="display:inline">
+											<button onClick="clearPaths()">Clear Graph</button>
+				    </div>
+
+		<div id="label"> Click on nodes to add paths. Combine paths into routes. Make at least one route from Green to Red. </div>
+		<table id="mainTable" border=0>
+			<tr>
+						<td width="10%"></td>
+						<td width="30%" valign ="top" class="logCell">
+							 <div id="actionLog"></div>
+					  </td>
+					  <td align = "center" valign ="top" class="canvasCell">
+							  <div id="holdCanvas"></div>
+					  </td>
+			 </tr>
+
+	</table>
+</center>
+
+<script type='text/javascript'>
+  const W = 600;
+	const H = 700;
+  const nodes = []
+	const queue = []
+	const visited = []
+	const START_NODE = 0
+  const NUMBER_NODES = 64
+  const NODES_PER_ROW = 8
+	const X_START = 50
+	const Y_START = 50
+	const NODE_DIAM = Math.floor(300/NODES_PER_ROW)
+  const LINEEND_DIAM = 5
+	const NODE_SPACER =  Math.floor(120/NODES_PER_ROW)
+
+  const STANDARD_BORDER_COLOR = "blue"
+	const STANDARD_FILL_COLOR = "lightslategrey";
+	const VISITED_BORDER_COLOR = "green"
+  const VISITED_FILL_COLOR = "yellow"
+	const DEADEND_BORDER_COLOR = "green"
+  const Q_BORDER_COLOR = "yellow"
+  const Q_FILL_COLOR = "lightslategrey";
+	const BEST_PATH_COLOR = "red"
+	let nodeClicked = null
+	let numNodesChecked = -1
+	let destination = NUMBER_NODES-1
+	let actionLog = " -- "
+
+
+
+
+function nextRouteTurn () {
+					//get current off the queue
+					let current = queue.shift();
+					visited.push(current)
+					nodes[current].fill = "yellow"
+
+					if (current===0) {
+								nodes[current].fill ="green"
+								nodes[current].border = STANDARD_BORDER_COLOR
+					}
+
+
+					//process current node
+					actionLog += "<br><u>Processing Node  "+current+"                   &nbsp;</u><br>"
+					numNodesChecked +=1
+
+					if (current === destination) {
+										let bestRouteLen = countBestRoute(current)
+										document.getElementById('label').innerHTML = " Found Destination after checking "+numNodesChecked+" nodes. Shortest route has "+bestRouteLen+" segments."
+										actionLog += "Found Destination <br>"
+										actionLog += "Parent is "+nodes[current].parent+" <br>"
+										actionLog += "Shortest route has "+bestRouteLen+" <br>"
+										actionLog += " Q is ["+queue.toString()+"] <br>"
+										actionLog += " V is ["+visited.toString()+"] <br>"
+										document.getElementById('actionLog').innerHTML = actionLog
+										nodes[current].fill="red"
+										nodes[current].border=STANDARD_BORDER_COLOR
+										queue.length = 0
+
+
+										//when done, reset buttons
+										document.getElementById('startTurnbyTurnButtonDiv').style.display = "none";
+										document.getElementById('nextTurnButtonDiv').style.display = "none";
+
+										document.getElementById('clearPathsButtonDiv').style.display = "inline";
+										document.getElementById('findBestRouteButtonDiv').style.display = "inline";
+										document.getElementById("findBestRoute").disabled = true;
+
+										return
+
+					} //if found destination
+
+					nodes[current].border = VISITED_BORDER_COLOR
+
+
+					// //show dead ends
+					// let pathsAlreadyVisited = 0
+					// nodes[current].paths.forEach(path => {
+					// 		if (visited.includes(path.destNode)) {
+					// 					//actionLog += "Discarding path: "+current+" to "+ path.destNode +"<br>"
+					// 					pathsAlreadyVisited +=1
+					// 		}
+					// })
+					//
+					//
+					// if (pathsAlreadyVisited == nodes[current].paths.length) {
+					// 				actionLog += current +" is a dead end <br>"
+					// 				nodes[current].border = DEADEND_BORDER_COLOR
+					//
+					// } else {
+					// 				nodes[current].border = VISITED_BORDER_COLOR
+					//
+					// }
+
+
+					//add all current's paths to the queue
+					for (var path of nodes[current].paths) {
+										if(!visited.includes(path.destNode)) {
+														queue.push(path.destNode)
+														nodes[path.destNode].parent = current
+														nodes[path.destNode].fill=Q_FILL_COLOR
+														nodes[path.destNode].border=Q_BORDER_COLOR
+														actionLog += current+" is adding "+path.destNode+" to the Q<br>"
+										}
+
+					} //for - add paths to queue
+
+					actionLog += " Q is ["+queue.toString()+"] <br>"
+					actionLog += " V is ["+visited.toString()+"] <br>"
+					actionLog += " Parent is "+nodes[current].parent+" <br>"
+
+					document.getElementById('actionLog').innerHTML = actionLog
+
+
+} //nextRouteTurn
+
+
+
+
+function startTurnbyTurn (nodeNum) {
+      document.getElementById('label').innerHTML = "--"
+			actionLog = "Starting node is 0<br> Destination node is "+destination+" <br>"
+			//add the starting node to the queue
+			queue.push(nodeNum)
+
+			//hide the ClearPaths button
+			document.getElementById('clearPathsButtonDiv').style.display = "none";
+			document.getElementById('nextTurnButtonDiv').style.display = "inline";
+	    document.getElementById('findBestRouteButtonDiv').style.display = "none";
+		 	document.getElementById('startTurnbyTurnButtonDiv').style.display = "none";
+
+			nextRouteTurn()
+
+} //findRoute function
+
+
+
+
+function findBestRoute(nodeNum) {
+			document.getElementById('label').innerHTML = "--"
+			actionLog = "Starting node is 0<br> Destination node is "+destination+" <br>"
+			//add the starting node to the queue
+			queue.push(nodeNum)
+
+			while ( queue.length >0)  {
+								nextRouteTurn ()
+
+			}
+
+			//when done
+			document.getElementById('startTurnbyTurnButtonDiv').style.display = "none";
+			document.getElementById('nextTurnButtonDiv').style.display = "none";
+
+			document.getElementById('clearPathsButtonDiv').style.display = "inline";
+			document.getElementById('findBestRouteButtonDiv').style.display = "inline";
+			document.getElementById("findBestRoute").disabled = true;
+} //findRoute function
+
+
+
+
+
+
+
+		function setup() {
+			//show the find route button but make it disabled
+			document.getElementById("findBestRoute").disabled = true;
+			let myCanvas = createCanvas(W, H);
+			myCanvas.parent('holdCanvas');
+
+						for (let i = 0; i < NUMBER_NODES; i++) {
+								let rowNum = Math.floor(i/NODES_PER_ROW)
+								let colNum = i % NODES_PER_ROW
+								let node = {
+										id: i,
+										x: X_START+(colNum*(NODE_DIAM+NODE_SPACER)),
+										y: Y_START+(rowNum*(NODE_DIAM+NODE_SPACER)),
+										border: STANDARD_BORDER_COLOR,
+										fill: STANDARD_FILL_COLOR,
+                    paths: [],
+										parent: "--"
+								}
+								//starting node for route
+								if (i==0) {
+											node.fill="green"
+											node.border=STANDARD_BORDER_COLOR
+								}
+
+								//ending node
+								if (i==NUMBER_NODES-1) {
+											node.fill="red"
+								}
+								nodes.push(node)
+
+							}//for
+   } //setup
+
+
+	 function countBestRoute(ended) {
+	 			let current = ended
+	 			let bestRouteLen = 0
+
+	 			while (current > START_NODE) {
+	 							//change color of both paths
+	 							let currentNode = nodes[current]
+	 							console.log(" Cs paths are "+JSON.stringify(currentNode.paths))
+
+	 							let toParentPathIndex = currentNode.paths.findIndex(path => {
+	 								          console.log(current+" path dest is  "+path.destNode+"<br>")
+	 													return path.destNode === currentNode.parent
+	 							})
+	 							console.log("toParentPathIndex "+toParentPathIndex)
+
+	 							currentNode.paths[toParentPathIndex].color=BEST_PATH_COLOR
+
+	 							bestRouteLen += 1
+	 							console.log("Walking back from "+current+" to "+currentNode.parent+" len="+bestRouteLen)
+	 							current = currentNode.parent
+
+	 			} //while
+	 			return bestRouteLen
+
+	 } //countBestRoute function
+
+	 function doNodeClick(newNodeID) {
+ 	 		if (nodeClicked===null) {  //first Node
+		 					nodes[newNodeID].border = "red"
+							nodeClicked = newNodeID
+							//document.getElementById('label').innerHTML += " nodeClicked = "+nodeClicked
+      } else {   //second node
+							let newpath = {
+									destNode: newNodeID,
+									color: "black"
+							}
+							nodes[nodeClicked].paths.push(newpath)
+
+							let revpath = {
+									destNode: nodeClicked,
+									color: "black"
+							}
+							nodes[newNodeID].paths.push(revpath)
+							nodes[nodeClicked].border = STANDARD_BORDER_COLOR
+							// console.log(nodes[nodeClicked])
+							// console.log(nodes[newNodeID])
+
+
+							//once you have a viable route, switch display to start findRoute
+							if (newNodeID === destination) {
+												document.getElementById("findBestRoute").disabled = false;
+												//document.getElementById('findBestRouteButtonDiv').style.display = "inline";
+												document.getElementById('startTurnbyTurnButtonDiv').style.display = "inline";
+
+							}
+
+							nodeClicked = null
+							redraw()
+
+			}
+
+}
+
+
+	 function mouseClicked() {
+		 		//check clicking within the board
+		 		if (mouseX < X_START+(NODES_PER_ROW*(NODE_DIAM+NODE_SPACER)) &&
+				    mouseX > X_START- NODE_DIAM &&
+						mouseY > Y_START- NODE_DIAM &&
+						mouseY < Y_START+(NODES_PER_ROW*(NODE_DIAM+NODE_SPACER)) ) {
+
+
+											let clickCol = Math.ceil((mouseX-X_START+((NODE_DIAM+NODE_SPACER)*.5))/(NODE_DIAM+NODE_SPACER))
+							 		    let clickRow = Math.ceil((mouseY-Y_START+((NODE_DIAM+NODE_SPACER)*.5))/(NODE_DIAM+NODE_SPACER))
+											let nodeNum=(clickCol-1)+((clickRow-1)*NODES_PER_ROW)
+											//document.getElementById('label').innerHTML = "Row: "+clickRow+"   Col: "+clickCol+ " Node:"+nodeNum+" X: "+mouseX+" Y: "+mouseY
+							 		    doNodeClick(nodeNum)
+
+			}
+   } //mouseClicked
+
+
+	 function clearPaths() {
+     document.getElementById('label').innerHTML = "Click on nodes to add paths. Combine paths into routes. Make at least one route from Green to Red."
+		 nodes.forEach(node => {
+						 node.paths = []
+						 node.border= STANDARD_BORDER_COLOR;
+						 node.fill= "lightslategrey";
+
+						 //starting node
+						 if (node.id===0) {
+									 node.fill="green"
+									 node.border=STANDARD_BORDER_COLOR
+						 }
+
+						 //destination node
+						 if (node.id === NUMBER_NODES-1) {
+									 node.fill="red"
+									 node.border=STANDARD_BORDER_COLOR
+						 }
+
+
+		 });
+		 document.getElementById('clearPathsButtonDiv').style.display = "inline";
+ 		 document.getElementById('nextTurnButtonDiv').style.display = "none";
+ 		 document.getElementById('findBestRouteButtonDiv').style.display = "inline";
+ 		 document.getElementById('startTurnbyTurnButtonDiv').style.display = "none";
+		 document.getElementById("findBestRoute").disabled = true;
+
+     queue.length = 0
+		 visited.length = 0
+		 nodeClicked = null
+		 actionLog = " "
+		 document.getElementById('actionLog').innerHTML = "";
+		 redraw()
+	 } //clearPaths
+
+
+	 function clearCanvas() {
+	     stroke(255);
+	     fill(240)
+	     rect (0,0,W,H)
+	 }
+
+
+		function draw() {
+			clearCanvas()
+			drawNodes();
+		}
+
+
+		function drawNodes() {
+					stroke('black');
+				  strokeWeight(3);
+
+					//draw the nodes
+					nodes.forEach(node => {
+									stroke(node.border);
+									fill(node.fill)
+									ellipse(node.x, node.y, NODE_DIAM)
+
+				  });
+
+					//draw paths
+					strokeWeight(2);
+					nodes.forEach(node => {
+									fill("black")
+									node.paths.forEach(path => {
+										  stroke(path.color);
+											line(node.x, node.y,nodes[path.destNode].x, nodes[path.destNode].y)
+											stroke("black");
+											ellipse(node.x, node.y, LINEEND_DIAM)
+											ellipse(nodes[path.destNode].x, nodes[path.destNode].y, LINEEND_DIAM)
+									})
+				  });
+
+
+			} //drawnodes
+
+
+			</script>
+		</center>
+		</body>
+		</html>

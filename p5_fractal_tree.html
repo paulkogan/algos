@@ -1,0 +1,257 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>P5 Fractal Tree</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+<script src="http://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.6/addons/p5.dom.js"></script>
+
+
+<style type="text/css">
+
+body {
+  text-align: center;
+  font-family: "Palatino Linotype", "Book Antiqua", "Palatino", "serif";
+  font-size: 110%;
+  margin: auto;
+}
+
+button {
+    background-color: white;
+    border: 1px solid grey;;
+    color: grey;
+    padding: 6px 12px;
+    text-align: center;
+    display: inline-block;
+    font-size: 16px;
+    margin: 8px;
+    cursor: pointer;
+    focus: outline:0;
+}
+
+button:focus {outline:0;}
+}
+
+
+div {
+    border: 0px solid grey;;
+
+}
+
+</style>
+
+
+</head>
+<body>
+
+<h2> The Fractal Tree </h2>
+<table align = "center" border=0 callspacing=6 >
+<tr>
+            <td>
+                    <button id="plusGrowthButton"  onClick="doPlusGrowth();" >  +  </button>
+            </td>
+            <td>
+                    <b><p id="growthLabel"></p></b>
+            </td>
+            <td>
+                    <button id="minusGrowthButton" onClick="doMinusGrowth();" >  -  </button>
+            </td>
+            <td style="width: 50px;"></td>
+            <td>
+                    <button id="plusMinlenButton"  onClick="doPlusMinlen();" >  +  </button>
+            </td>
+            <td>
+                    <b><p id="minlenLabel"></p></b>
+            </td>
+            <td>
+                    <button id="minusMinlenButton" onClick="doMinusMinlen();" >  -  </button>
+            </td>
+           <td style="width: 50px;"></td>
+            <td>
+                    <button id="plusAngleButton"  onClick="doPlusAngle();" >  +  </button>
+            </td>
+
+            <td>
+            <b><p id="angleLabel"></p></b>
+            </td><td>
+            <button id="minusAngleButton" onClick="doMinusAngle();" >  -  </button>
+            </td>
+</tr>
+<tr>
+            <td align = "center" colspan="3"><i>Growth %</i></td>
+            <td colspan="5"><i>Min. Branch Length</i></td>
+            <td align = "center" colspan="3"><i>Curve %</i></td>
+</tr>
+<tr>
+            <td colspan="11"><div id="calcStatus"></div></td>
+</tr>
+
+
+
+</table>
+<div id="holdAngleSlider"></div>
+
+<script type='text/javascript'>
+// setup variables
+var w = 700;
+var h = 500;
+var deg_to_rad = Math.PI / 180.0;
+var angle = 180;  // initial angle
+//var angle = 10;  // if using simple growth
+var branchColor="brown";
+var startLen = 80
+var len = startLen; //branch length
+var minL = 12; //minimum branch size - 5+
+var treeLine1 = 14; //when len gets this small, switch to lightgreen
+var treeLine2 = 10; //when len gets this small, switch to dark green
+//var stepdown = 0.65;  //how much len should shrink with each iteration, between .65 and .85
+var rootLift = 20;
+var angleChange = 16; //how much each new branch should bend, between 10 and 30
+var growth = 78;
+var branchCount = 0
+
+let x1 = w/2
+let y1 = h-rootLift
+
+//for simpleBranch
+var offset = 20
+var offsetChange = 20
+
+
+
+function setup(){
+
+    createCanvas(w, h);
+    strokeWeight(4);
+    strokeWeight(4);
+		stroke("brown");
+		strokeWeight(3);
+    branchCount = 0;
+		makeBranch(x1,y1,+angle,len);
+
+
+    angleLabel.innerHTML=angleChange;
+    growthLabel.innerHTML=growth;
+    minlenLabel.innerHTML=minL;
+
+
+
+} //setup
+
+
+
+function makeBranch(x1, y1, angle, len){
+
+  if (len > minL)  {
+    console.log ("got x1: "+x1+" y1: "+y1+" angle: "+angle+" len: "+len+" AC="+angleChange)
+    branchCount += 1
+    //find where the branch ends
+    //SohCahToa  === CHANGE (2)
+    var x2 = parseInt(x1 + (Math.sin(angle*deg_to_rad) * len));
+    var y2 = parseInt(y1 + (Math.cos(angle*deg_to_rad) * len));
+
+
+    //figure out the color
+    if (len > treeLine1) branchColor = "brown";
+    else  if (len > treeLine2) branchColor = "lightgreen";
+    else  branchColor = "green";
+
+
+	stroke(branchColor);
+	strokeWeight(12*(len/startLen));
+    line(x1,y1,x2,y2);
+
+    //  ****  RECURSION *** call this function from this point
+
+    makeBranch(x2, y2,   angle - angleChange, parseInt(len*growth/100));
+    makeBranch(x2, y2,   angle + angleChange, parseInt(len*growth/100));
+    calcStatus.innerHTML=branchCount +" branches. "
+  }
+}
+
+
+
+
+
+
+function clearCanvas() {
+    stroke(255);
+    //noFill()
+    rect (0,0,2*h,2*w)
+}
+
+
+
+function doPlusGrowth() {
+    if (growth < 86) {
+            growth +=1;
+            growthLabel.innerHTML=growth;
+            clearCanvas();
+            branchCount = 0;
+            makeBranch(x1,y1,+angle,len);
+    }
+}
+
+
+
+function doMinusGrowth() {
+            growth -=1;
+            growthLabel.innerHTML=growth;
+            clearCanvas();
+            branchCount = 0;
+            makeBranch(x1,y1,+angle,len);
+}
+
+
+function doPlusAngle() {
+    if (angleChange < 30) {
+            angleChange  +=1;
+            angleLabel.innerHTML=angleChange;
+            clearCanvas();
+            branchCount = 0;
+            makeBranch(x1,y1,+angle,len);
+    }
+}
+
+
+function doMinusAngle() {
+    if (angleChange > 0) {
+            angleChange  -=1;
+            angleLabel.innerHTML=angleChange;
+            clearCanvas();
+            branchCount = 0;
+            makeBranch(x1,y1,+angle,len);
+    }
+}
+
+
+function doPlusMinlen() {
+    if (minL < 20) {
+            minL  +=1;
+            minlenLabel.innerHTML=minL;
+            clearCanvas();
+            branchCount = 0;
+            makeBranch(x1,y1,+angle,len);
+    }
+}
+
+
+function doMinusMinlen() {
+    if (minL > 5) {
+            minL  -=1;
+            minlenLabel.innerHTML=minL;
+            clearCanvas();
+            branchCount = 0;
+            makeBranch(x1,y1,+angle,len);
+    }
+}
+
+
+
+
+
+</script>
+</center>
+</body>
+</html>

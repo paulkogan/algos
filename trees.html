@@ -1,0 +1,124 @@
+<html>
+<head>
+	<title>Trees for Terrarium</title>
+	<script src= "https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+
+	<script src= "http://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.6/addons/p5.dom.js"></script>
+		<style type="text/css">
+
+		button {
+		    background-color: white;
+		    border: 1px solid grey;;
+		    color: grey;
+		    padding: 6px 12px;
+		    text-align: center;
+		    display: inline-block;
+		    font-size: 16px;
+		    margin: 8px;
+		    cursor: pointer;
+		    focus: outline:0;
+		}
+
+		button:focus {outline:0;}
+		}
+
+
+
+		</style>
+</head>
+<body>
+<center>
+		<b>Terrarium Trees</b> <br>
+		<div id="label"> </div>
+		<button onClick="addTree()">Add Tree</button>
+  	<div id="holdCanvas"></div>
+</center>
+
+<script type='text/javascript'>
+  const W = 800;
+  const H = 600;
+  const trees = []
+	const INITIAL_TREES = 3
+
+
+
+		function setup() {
+			let myCanvas = createCanvas(W, H);
+		  myCanvas.parent('holdCanvas');
+
+						for (let i = 0; i < INITIAL_TREES; i++) {
+
+								addTree()
+
+							}//for
+						 clearCanvas()
+				 		 drawTrees();
+
+   } //setup
+
+	 function addTree() {
+
+					 let tree = {
+
+					 		x: random(100,W-100),
+					 		y: random(100,H-100),
+					 		size: random(5,10),
+					 		rColor:random(255),
+					 		gColor: random(255),
+					 		bColor: random(255),
+
+					 }
+					 trees.push(tree)
+					 drawTrees()
+	 }
+
+
+
+	 function draw() {
+		 
+	 }
+
+
+
+	 function clearCanvas() {
+	     stroke(255);
+	     fill("khaki")
+	     rect (0,0,H*3,W*3)
+	 }
+
+
+
+
+		function drawTrees() {
+			    clearCanvas()
+					trees.forEach(tree => {
+						     //draw trunk
+									stroke("brown");
+									strokeWeight(6);
+									line(tree.x,tree.y,tree.x, tree.y+(tree.size*8))
+
+									//draw tree leaves
+									for( let i=0; i<20+tree.size*3; i++) {
+												let colorOffset=random(-30,30)
+												let leafColor = color(tree.rColor+colorOffset,tree.gColor-colorOffset,tree.bColor+colorOffset)
+												fill(leafColor)
+												stroke(leafColor);
+												strokeWeight(1);
+
+												//random distribution of leaves
+												let distanceXOffset=random(-30,30)
+												let distanceYOffset=random(-50,20)
+												ellipse(tree.x+distanceXOffset, tree.y+distanceYOffset, 20)
+									}
+
+				  });
+
+
+
+			}
+
+
+			</script>
+		</center>
+		</body>
+		</html>
