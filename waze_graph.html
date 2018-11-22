@@ -84,22 +84,24 @@
 <button onClick="clearPaths()">Clear Graph</button>
 </div>
 <br>
-<div id="label" style="display:inline;text-align:right">Click on nodes to add paths. Combine paths into routes. Make at least one route from Green to Red. </div>
+<div id="label" style="display:inline;text-align:right"> </div>
+<br>
 <table id="mainTable" border=0>
 			<tr>
 						<td width="10%"></td>
 						<td width="30%" valign ="top" class="logCell">
-							 <div id="actionLog"></div>
+							 <div id="actionLog" width=100%></div>
 					  </td>
-					  <td align = "center" valign ="top" class="canvasCell">
+					  <td width="50%" align = "center" valign ="top" class="canvasCell">
 							  <div id="holdCanvas"></div>
 					  </td>
+						<td width="10%"></td>
 			 </tr>
 
 </table>
 </center>
-bfs v. 4.4 array log
-
+bfs v. 4.6 node index markers
+<div id="debug">  </div>
 
 <script type='text/javascript'>
 const W = 600;
@@ -111,7 +113,7 @@ const logArray = []
 const START_NODE = 0
 const NUMBER_NODES = 64
 const NODES_PER_ROW = 8
-const X_START = 50
+const X_START = 100
 const Y_START = 50
 const NODE_DIAM = Math.floor(300/NODES_PER_ROW)
 const LINEEND_DIAM = 5
@@ -128,6 +130,29 @@ const BEST_PATH_COLOR = "red";
 let nodeClicked = null
 let numNodesChecked = 0
 let destination = NUMBER_NODES-1
+let startMessage = "Click on nodes to add paths.<br>Combine paths into routes.<br>Make at least one route from Green to Red."
+
+
+function addIndexTags() {
+					textFont("Palatino Linotype");
+					textSize(20);
+					fill(0);
+					stroke("blue")
+					textAlign(CENTER, CENTER);
+					strokeWeight(.5);
+					textStyle(NORMAL);
+					for (let i = 0; i < NUMBER_NODES; i=i+NODES_PER_ROW ) {
+							let x = X_START*.3;
+							let y = 1+Y_START+((i/NODES_PER_ROW)*(NODE_DIAM+NODE_SPACER));
+
+							let s = i.toString()
+							text(s,x,y)
+							//console.log(i,x,y)
+				  }
+
+} //addIndexTags function
+
+
 
 
 function printActionLog() {
@@ -143,6 +168,8 @@ function printActionLog() {
 
 function nextRouteTurn () {
 					//get current off the queue
+					//document.getElementById('debug').innerHTML = "<pre>"+JSON.stringify(nodes,null,4)+"</pre>";
+					//console.log(JSON.stringify(nodes,null,4));
 					let current = queue.shift();
 					visited.push(current)
 					nodes[current].fill = "yellow"
@@ -192,7 +219,7 @@ function nextRouteTurn () {
 
 					//add all current's paths to the queue
 					for (var path of nodes[current].paths) {
-										if(!visited.includes(path.destNode)) {
+										if(!visited.includes(path.destNode) && !queue.includes(path.destNode)) {
 														queue.push(path.destNode)
 														if (!nodes[path.destNode].parent) nodes[path.destNode].parent = current
 														nodes[path.destNode].fill=Q_FILL_COLOR
@@ -218,7 +245,7 @@ function startTurnbyTurn (nodeNum) {
       document.getElementById('label').innerHTML = "--"
 			//clear logArray
 			logArray.length=0
-			let actionLog = "Here we go! Starting node is 0<br> Destination node is "+destination+" <br>"
+			let actionLog = "Here we go!<br> Starting node is 0<br> Destination node is "+destination+" <br>"
 
 			//add the starting node to the queue
 			queue.push(nodeNum)
@@ -268,6 +295,7 @@ function findBestRoute(nodeNum) {
 		function setup() {
 			//show the find route button but make it disabled
 			document.getElementById("findBestRoute").disabled = true;
+			document.getElementById('actionLog').innerHTML = startMessage;
 			let myCanvas = createCanvas(W, H);
 			myCanvas.parent('holdCanvas');
 
@@ -296,6 +324,7 @@ function findBestRoute(nodeNum) {
 								nodes.push(node)
 
 							}//for
+							addIndexTags()
    } //setup
 
 
@@ -306,11 +335,11 @@ function findBestRoute(nodeNum) {
 	 			while (current > START_NODE) {
 	 							//change color of both paths
 	 							let currentNode = nodes[current]
-	 							console.log(" Cs paths are "+JSON.stringify(currentNode.paths))
-
+	 							console.log(" CurrentNodes paths are "+JSON.stringify(currentNode.paths))
+								console.log(" CurrentNodes parent is "+currentNode.parent)
 								//use findIndex instead of indexOf to pass in a CB function
 	 							let toParentPathIndex = currentNode.paths.findIndex(path => {
-	 								          console.log(current+" path dest is  "+path.destNode+"<br>")
+	 								          //console.log(current+" path dest is  "+path.destNode)
 	 													return path.destNode === currentNode.parent
 	 							})
 	 							console.log("toParentPathIndex "+toParentPathIndex)
@@ -390,11 +419,12 @@ function findBestRoute(nodeNum) {
 
 
 	 function clearPaths() {
-     document.getElementById('label').innerHTML = "Click on nodes to add paths. Combine paths into routes. Make at least one route from Green to Red."
+     document.getElementById('label').innerHTML = ""
 		 nodes.forEach(node => {
 						 node.paths = []
 						 node.border= STANDARD_BORDER_COLOR;
 						 node.fill= "lightslategrey";
+						 node.parent=null
 
 						 //starting node
 						 if (node.id===0) {
@@ -420,8 +450,9 @@ function findBestRoute(nodeNum) {
 		 visited.length = 0
 		 logArray.length =0
 		 nodeClicked = null
+		 numNodesChecked = 0
 		 //actionLog = " "
-		 document.getElementById('actionLog').innerHTML = "";
+		 document.getElementById('actionLog').innerHTML = startMessage;
 		 redraw()
 	 } //clearPaths
 
@@ -436,6 +467,7 @@ function findBestRoute(nodeNum) {
 		function draw() {
 			clearCanvas()
 			drawNodes();
+
 		}
 
 
@@ -463,7 +495,7 @@ function findBestRoute(nodeNum) {
 											ellipse(nodes[path.destNode].x, nodes[path.destNode].y, LINEEND_DIAM)
 									})
 				  });
-
+          addIndexTags()
 
 			} //drawnodes
 
