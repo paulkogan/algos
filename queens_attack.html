@@ -1,0 +1,195 @@
+<html>
+<head>
+<title>Queens Attack</title>
+
+
+
+	<style type="text/css">
+
+		body {
+		  text-align: center;
+		  font-family: "Palatino Linotype", "Book Antiqua", "Palatino", "serif";
+		  font-size: 110%;
+		  margin: auto;
+		}
+
+
+
+		button {
+		    background-color: white;
+		    border: 2px solid black;
+		    color: black;
+		    padding: 6px 12px;
+		    text-align: center;
+		    display: inline-block;
+		    font-size: 16px;
+		    margin: 8px;
+		    cursor: pointer;
+		}
+
+		button:focus {
+			outline:0;
+	   }
+
+		 button:disabled {
+       color: grey;
+			 cursor: auto;
+			 border: 1px solid grey;;
+ 	   }
+
+
+</style>
+
+</head>
+<body>
+
+
+<center>
+<br> <br>
+<h2> Queens Attack</h2>
+<font size=4>
+
+
+<p id="label"> </p>
+<br>
+<br>
+<p id="notesLabel"> </p>
+
+<script>
+var label= document.getElementById("label");
+var notesLabel= document.getElementById("notesLabel");
+
+// 5 3
+// 4 3
+// 5 5
+// 4 2
+// 2 3
+let obstacles = [
+	[5,5],[4,2],[2,3]
+]
+
+
+queensAttack(5,3,4,3,obstacles)
+
+// Complete the queensAttack function below.
+function queensAttack(n, k, r_q, c_q, obstacles) {
+
+  let output = "Queen is "+r_q+","+c_q+"<br>"
+	let size = n
+	let gameBoard = makeBoard(size)
+	gameBoard[r_q][c_q] = " Q "
+  obstacles.forEach( pair => {
+				output += pair+"<br>"
+        gameBoard[pair[0]][pair[1]] = " X "
+
+	})
+
+  notesLabel.innerHTML = output
+ 	printBoard(gameBoard)
+
+	let totalSpaces = 0
+
+
+
+//go through each direction
+			for (let rDir = -1; rDir <2; rDir ++) {
+							for (let cDir = -1; cDir <2; cDir ++) {
+											if (!((rDir===0) && (cDir===0)) )  totalSpaces += countDir (rDir,cDir)
+							}
+		  }
+
+ notesLabel.innerHTML += "<br>The total spaces is "+totalSpaces
+ return totalSpaces
+
+
+
+function countDir (rDir,cDir) {
+      let hitEnd = false
+			let row =r_q
+			let col = c_q
+			let totalForDir = 0
+			let output = "<br><br>Checking "+rDir+" "+cDir+"<br>"
+     console.log("Checking "+rDir+" "+cDir)
+
+	    while(!hitEnd) {
+						row=row+rDir
+				    col=col+cDir
+						if (row<1 || row>size || col<1 || col>size ) {
+									hitEnd=true
+									output += "Edge at "+row+" "+col+"<br>"
+									console.log("Edge at "+row+" "+col)
+						} else if (gameBoard[row][col]===" X " ) {
+									output += "Obstacle at "+row+" "+col+"<br>"
+							    hitEnd=true
+						} else {
+									totalForDir +=1
+							    output += "+1 at "+row+" "+col+"<br>"
+									console.log("+1 at "+row+" "+col)
+						}
+
+
+			} //while
+output += "Total Spaces for "+rDir+" "+cDir+" is "+totalForDir+"<br><br>"
+notesLabel.innerHTML += output
+return totalForDir
+
+}
+
+
+} //quennsAttack
+
+//position is [r][c]
+function  makeBoard(size) {
+	    let board = []
+
+		//create sqaures and populate
+		//note - first column is empty
+			for (let row=size; row>0;row--) {
+					board[row] = [] //put a col array in every row
+			   			for (let col=1; col<=size; col++) {
+								  board[row][col] = row+","+col
+						  }
+			}
+      //console.log(board)
+			return board
+
+
+}
+
+
+
+
+
+
+function printBoard (board) {
+
+			let output = "+R<br>"
+			//create sqaures anfd populate
+				for (let row=board.length-1; row>0; row--) {
+						output += "-C  "+row+" "
+								for (let col=1; col<board.length; col++) {
+										output += "["+board[row][col]+"] "
+								}
+								output += "+C <br>"
+				}
+
+				output += "-R  <br>"
+			label.innerHTML = output
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</center>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<html>
+<head>
+<title>Reverse-a-Phrase</title>
+
+
+
+	<style type="text/css">
+
+		body {
+		  text-align: center;
+		  font-family: "Palatino Linotype", "Book Antiqua", "Palatino", "serif";
+		  font-size: 110%;
+		  margin: auto;
+		}
+
+
+
+		button {
+		    background-color: white;
+		    border: 2px solid black;
+		    color: black;
+		    padding: 6px 12px;
+		    text-align: center;
+		    display: inline-block;
+		    font-size: 16px;
+		    margin: 8px;
+		    cursor: pointer;
+		}
+
+		button:focus {
+			outline:0;
+	   }
+
+		 button:disabled {
+       color: grey;
+			 cursor: auto;
+			 border: 1px solid grey;;
+ 	   }
+
+
+</style>
+
+</head>
+<body>
+
+
+<center>
+<br> <br>
+<h2> Reverse-in-Place 2</h2>
+<font size=4>
+Give me a phrase:
+<br> <br>
+
+
+
+<input type="text" size=50 id="messageField" value="You say...">
+<br>
+<br>
+ <button id="sendText" onClick = "reverseIt();">Reverse it!</button>
+<br>
+<br>
+<text id="listBox" rows="3" cols="50"></text><br>
+
+
+<script>
+var messageField= document.getElementById("messageField");
+var listBox= document.getElementById("listBox");
+//document.body.style.backgroundColor = "lightblue";
+
+
+
+function  reverseIt() {
+  var initialPhrase=messageField.value;
+
+  var reversePhrase = initialPhrase.split("").reverse().join("")
+
+  let output = "<br><b>"+initialPhrase + "</b> reversed is <b>"+reversePhrase+"<b><br>";
+  listBox.innerHTML = output
+}
+
+
+
+</script>
+</center>
+</body>
+</html>

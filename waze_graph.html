@@ -100,7 +100,7 @@
 
 </table>
 </center>
-bfs v. 4.6 node index markers
+bfs v. 4.8
 <div id="debug">  </div>
 
 <script type='text/javascript'>
@@ -130,7 +130,51 @@ const BEST_PATH_COLOR = "red";
 let nodeClicked = null
 let numNodesChecked = 0
 let destination = NUMBER_NODES-1
-let startMessage = "Click on nodes to add paths.<br>Combine paths into routes.<br>Make at least one route from Green to Red."
+let startMessage = "Click on nodes to add paths.<br>Combine paths into routes.<br>"
+startMessage+="Make several routes from Green to Red. <br>"
+let historyMessage ="<br><br>Here is <a href = 'https://en.wikipedia.org/wiki/Seven_Bridges_of_K%C3%B6nigsberg'> how Graph Theory started.</a><br>"
+historyMessage += "And a <a href = 'https://medium.com/basecs/a-gentle-introduction-to-graph-theory-77969829ead8'>gentle introduction.</a>"
+
+
+
+function countBestRoute(ended) {
+		 let current = ended
+		 let currentNode = nodes[current]
+		 let bestRouteLen = 0
+
+
+
+		 while (!(currentNode.parent===null)) {
+						 //step back thru and change color of shortest route paths
+						 console.log(" CurrentNodes paths are "+JSON.stringify(currentNode.paths))
+						 console.log(" CurrentNodes parent is "+currentNode.parent)
+						 //use findIndex instead of indexOf to pass in a CB function
+						 let toParentPathIndex = currentNode.paths.findIndex(path => {
+												 //console.log(current+" path dest is  "+path.destNode)
+												 return path.destNode === currentNode.parent
+						 })
+						 //console.log("toParentPathIndex "+toParentPathIndex)
+						 currentNode.paths[toParentPathIndex].color=BEST_PATH_COLOR
+
+						 //change color of the path going in the other direction
+						 let parentNode = nodes[currentNode.parent]
+						 let fromParentPathIndex = parentNode.paths.findIndex(path => {
+												 return path.destNode === current
+						 })
+						 parentNode.paths[fromParentPathIndex].color=BEST_PATH_COLOR
+
+
+						 bestRouteLen += 1
+						 console.log("Walking back from "+current+" to "+currentNode.parent+" len="+bestRouteLen)
+						 current = currentNode.parent;
+						 currentNode = nodes[current]
+
+		 } //while
+		 return bestRouteLen
+
+} //countBestRoute function
+
+
 
 
 function addIndexTags() {
@@ -295,9 +339,12 @@ function findBestRoute(nodeNum) {
 		function setup() {
 			//show the find route button but make it disabled
 			document.getElementById("findBestRoute").disabled = true;
-			document.getElementById('actionLog').innerHTML = startMessage;
+			document.getElementById('actionLog').innerHTML = startMessage+historyMessage;
+
 			let myCanvas = createCanvas(W, H);
 			myCanvas.parent('holdCanvas');
+		  //var dropDown=createSelect();
+
 
 						for (let i = 0; i < NUMBER_NODES; i++) {
 								let rowNum = Math.floor(i/NODES_PER_ROW)
@@ -324,43 +371,11 @@ function findBestRoute(nodeNum) {
 								nodes.push(node)
 
 							}//for
+							//put numbers next to your rows
 							addIndexTags()
    } //setup
 
 
-	 function countBestRoute(ended) {
-	 			let current = ended
-	 			let bestRouteLen = 0
-
-	 			while (current > START_NODE) {
-	 							//change color of both paths
-	 							let currentNode = nodes[current]
-	 							console.log(" CurrentNodes paths are "+JSON.stringify(currentNode.paths))
-								console.log(" CurrentNodes parent is "+currentNode.parent)
-								//use findIndex instead of indexOf to pass in a CB function
-	 							let toParentPathIndex = currentNode.paths.findIndex(path => {
-	 								          //console.log(current+" path dest is  "+path.destNode)
-	 													return path.destNode === currentNode.parent
-	 							})
-	 							console.log("toParentPathIndex "+toParentPathIndex)
-								currentNode.paths[toParentPathIndex].color=BEST_PATH_COLOR
-
-								//change color of the path going in the other direction
-								let parentNode = nodes[currentNode.parent]
-								let fromParentPathIndex = parentNode.paths.findIndex(path => {
-														return path.destNode === current
-								})
-	 							parentNode.paths[fromParentPathIndex].color=BEST_PATH_COLOR
-
-
-	 							bestRouteLen += 1
-	 							console.log("Walking back from "+current+" to "+currentNode.parent+" len="+bestRouteLen)
-	 							current = currentNode.parent
-
-	 			} //while
-	 			return bestRouteLen
-
-	 } //countBestRoute function
 
 	 function doNodeClick(newNodeID) {
  	 		if (nodeClicked===null) {  //first Node

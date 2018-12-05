@@ -1,0 +1,205 @@
+<html>
+<head>
+	<title>Apple Stock Proce</title>
+	<script src= "https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+
+	<script src= "http://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.6/addons/p5.dom.js"></script>
+	<style type="text/css">
+
+
+		body {
+		  text-align: center;
+		  font-family: "Palatino Linotype", "Book Antiqua", "Palatino", "serif";
+		  font-size: 110%;
+		  margin: auto;
+		}
+
+
+
+		button {
+		    background-color: white;
+		    border: 2px solid black;
+		    color: black;
+		    padding: 6px 12px;
+		    text-align: center;
+		    display: inline-block;
+		    font-size: 16px;
+		    margin: 8px;
+		    cursor: pointer;
+		}
+
+		button:focus {
+			outline:0;
+	   }
+
+		 button:disabled {
+       color: grey;
+			 cursor: auto;
+			 border: 1px solid grey;;
+ 	   }
+
+
+
+		</style>
+</head>
+<body>
+<center>
+<br><b> STOCK PRICE  </b> <br>
+
+<button onClick="findMaxProfit()">Find Profit</button>
+
+<br>
+<div id="label" style="display:inline;text-align:right"> </div>
+<div id="holdCanvas"></div>
+<br>
+
+
+<script type='text/javascript'>
+
+const W = 600;
+const H = 300;
+const stockPrices = []
+const TOTAL_INDICES = 100
+const GRAPH_MAX = H-50
+const X_START = 50
+
+function populatePrices() {
+			let price = 100
+			let pv = 0
+			for (let i=0;i<TOTAL_INDICES;i++) {
+						let variance = Math.floor((Math.random()*(51))-10+(.2*pv))
+						//console.log(variance)
+						if (pv > 3) variance +=10
+						if (pv < -3) variance -=10
+						stockPrices[i] = price + variance;
+						pv = variance
+			}
+
+} //populate prices
+
+
+function graphPrices() {
+
+			stroke("black")
+			strokeWeight(3)
+			for (let i=0;i<TOTAL_INDICES;i++) {
+							line(X_START+(i*5),GRAPH_MAX, X_START+(i*5), GRAPH_MAX-stockPrices[i])
+
+			}
+
+
+}
+
+
+function findMaxProfit() {
+					//let salesLow = 0
+
+					let maxProfit = 0
+					let minOneMinuteDrop = 0
+
+					let tempLowIndex = 0
+					//let tempLow = stockPrices[0]
+
+
+					//for charting
+					 let saleHighIndex = 0
+					 let saleLowIndex = 0
+
+
+					for (let i=0;i<stockPrices.length;i++) {
+
+
+
+							//found new low?
+								if (stockPrices[i] < stockPrices[tempLowIndex])	{
+																			tempLowIndex = i
+																			//tempLow= stockPrices[i]
+																			console.log ("New Low is "+tempLowIndex )
+
+								}
+
+
+									 //is this the best new progfit?
+									 let currentProfit = stockPrices[i] - stockPrices[tempLowIndex]
+
+
+									 //if its higher and low is before high
+									 if (currentProfit > maxProfit && i > tempLowIndex) {
+										 		saleHighIndex = i
+												saleLowIndex = tempLowIndex
+												//salesLow = stockPrices[tempLow]
+												maxProfit = currentProfit
+												console.log( "Maxprofit is "+maxProfit+" with low: "+saleLowIndex+" and high: "+saleHighIndex)
+									 }
+
+
+									 let oneMinDrop = stockPrices[i-1] - stockPrices[i]
+									 if(oneMinDrop<0) {
+										 			minOneMinuteDrop = minOneMinuteDrop>oneMinDrop ? minOneMinuteDrop : oneMinDrop
+
+									 }
+
+
+
+					}  //big for loop
+					//done
+
+
+
+					let messageString = "Done! Maxprofit is "+maxProfit+" with low: "+stockPrices[saleLowIndex]+" and high: "+stockPrices[saleHighIndex]
+					messageString += "  Smallest one-min drop is "+minOneMinuteDrop
+					console.log(messageString)
+
+
+					document.getElementById('label').innerHTML = messageString;
+
+
+
+
+					//color new high red
+					stroke("red")
+					line(X_START+(saleHighIndex*5),GRAPH_MAX, X_START+(saleHighIndex*5), GRAPH_MAX-stockPrices[saleHighIndex])
+
+
+					//color new low green
+					stroke("green")
+					line(X_START+(saleLowIndex*5),GRAPH_MAX, X_START+(saleLowIndex*5), GRAPH_MAX-stockPrices[saleLowIndex])
+
+
+
+
+}
+
+
+function clearCanvas() {
+		stroke(255);
+		fill(240)
+		rect (0,0,W,H)
+}
+
+
+ function draw() {
+
+ }
+
+
+
+		function setup() {
+
+
+			let myCanvas = createCanvas(W, H);
+			myCanvas.parent('holdCanvas');
+			populatePrices()
+			graphPrices()
+
+
+   } //setup
+
+
+
+
+
+			</script>
+		</center>
+		</body>
+		</html>

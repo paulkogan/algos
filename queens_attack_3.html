@@ -1,0 +1,281 @@
+<html>
+<head>
+<title>Queens Attack</title>
+
+
+
+	<style type="text/css">
+
+		body {
+		  text-align: center;
+		  font-family: "Courier", "Palatino Linotype", "Book Antiqua", "Palatino", "serif";
+		  font-size: 110%;
+		  margin: auto;
+		}
+
+
+
+		button {
+		    background-color: white;
+		    border: 2px solid black;
+		    color: black;
+		    padding: 6px 12px;
+		    text-align: center;
+		    display: inline-block;
+		    font-size: 16px;
+		    margin: 8px;
+		    cursor: pointer;
+		}
+
+		button:focus {
+			outline:0;
+	   }
+
+		 button:disabled {
+       color: grey;
+			 cursor: auto;
+			 border: 1px solid grey;;
+ 	   }
+
+
+</style>
+
+</head>
+<body>
+
+
+<center>
+<br> <br>
+<h2> Queens Attack</h2>
+<font size=4>
+
+
+<p id="label"> </p>
+<br>
+<br>
+<p id="notesLabel" align="center"> </p>
+
+<script>
+var label= document.getElementById("label");
+var notesLabel= document.getElementById("notesLabel");
+
+let obstacles = [
+	[5,5],[4,2],[2,3],[10,8],[2,5],
+]
+
+queensAttack(10,5,5,3,obstacles)
+
+
+
+
+// Complete the queensAttack function below.
+function queensAttack(n, k, r_q, c_q, obstacles) {
+
+  //let output = "Queen is "+r_q+","+c_q+"<br>"
+	let output = ""
+	let size = n
+	const NOT_FOUND = n+1
+	let gameBoard = fillBoard(makeBoard(size, " - "))
+	let dirCountsOLD = makeBoard(3,NOT_FOUND)
+
+
+
+	let dirCounts = makeBoard(3,NOT_FOUND)
+	//let dirCounts = new Array(4).fill(new Array(4).fill(NOT_FOUND,1,4),1,4)
+	//let dirCounts = new Array(4).fill([0],[7],[7],[7]),1,4)
+
+	// let rowFill = []
+	// for (let col=1; col<=size; col++) {
+	// 								  //board[row][col] = row+","+col
+	// 									  rowFill[col] = NOT_FOUND
+	// 						  }
+//	let dirCounts = new Array(4).fill(rowFill,1,4)
+
+
+
+	doObstacles(obstacles)
+	let totalSpaces = countGains()
+ 	printBoard(gameBoard)
+	printBoard(dirCounts)
+
+	console.log(dirCounts)
+	console.log(typeof dirCounts[2][2])
+  console.log(dirCountsOLD)
+	console.log(typeof dirCountsOLD[2][2])
+
+	console.log(dirCounts == dirCountsOLD)
+	console.log(dirCounts === dirCountsOLD)
+
+  notesLabel.innerHTML = "<br>The total Spaces is "+totalSpaces+"<br>"
+	notesLabel.innerHTML += output
+  //return totalSpaces
+
+
+
+
+function countGains() {
+      let totalGains=0
+			for (let rDir = -1; rDir <2; rDir ++) {
+					for (let cDir = -1; cDir <2; cDir ++) {
+									if (!((rDir===0) && (cDir===0)) )  {
+										let rCell = 2+rDir   //(1,2,3    -1,0,1)
+										let cCell = 2+cDir
+										let thisDirGain = 0
+										// if there is an obstacle this direction
+										if (dirCounts[rCell][cCell]< NOT_FOUND) {
+											//output += "check - for "+dirCounts[rCell][cCell]+" is less than "+NOT_FOUND+"<br>"
+											   thisDirGain = dirCounts[rCell][cCell]
+												 //output += "OBS - for "+rDir+","+cDir+" got "+thisDirGain+"<br>"
+										//coast is clear, count distance to border
+										} else {
+												 let rGain = (rDir>-1) ? (size - r_q)*rDir : r_q-1
+												 let cGain = (cDir>-1) ? (size - c_q)*cDir : c_q-1
+												 if (rDir !=0 && cDir !=0 ) { //diagonal direction
+													 			thisDirGain = Math.min(rGain, cGain)
+
+												 } else { //Hor or vert direction
+													 				thisDirGain = Math.max(rGain, cGain)
+												 }
+ 											 	       //output += "CLEAR - for "+rDir+","+cDir+" got "+thisDirGain+"<br>"
+										} //if clear to border
+									             totalGains += thisDirGain
+
+									} //if not center square
+					} //cDur
+	    } //rDir
+
+return totalGains
+
+
+}
+
+
+
+function doObstacles (obstacles) {
+     output += "Doing Obstacles<br>"
+		 //output += "at start of Obstacles dirCounts is "+dirCounts.toString()+"<br>"
+		 obstacles.forEach(obstacle => {
+			    let r = obstacle[0]
+					let c = obstacle[1]
+					let cDir, rDir = 0
+					let dist = NOT_FOUND
+
+          if (c===c_q) {
+								 cDir=0
+								 rDir = (r>r_q) ? 1 :-1
+								 dist = Math.abs(r-r_q)
+					} else if (r===r_q) {
+								 rDir=0
+								 cDir = (c>c_q) ? 1 : -1
+								 dist = Math.abs(c-c_q)
+					} else {
+               rDir = (r>r_q) ? 1 :-1
+							 cDir = (c>c_q) ? 1 :-1
+							 let rDistance = Math.abs(r-r_q)
+							 let cDistance = Math.abs(c-c_q)
+							 if (rDistance === cDistance) {
+                  dist = rDistance
+							 }
+					}
+
+					if (dist < NOT_FOUND) {
+										let sqGain = dist -1
+										output += "Obs "+r+"-"+c+" is "+rDir+","+cDir+" and adds "+sqGain+" squares <br>"
+										let rCell = 2+rDir   //(1,2,3    -1,0,1)
+										let cCell = 2+cDir
+
+
+										//is it closer than previous obstacles on this axis
+										if ( (sqGain) < dirCounts[rCell][cCell] ) {
+													output += "changing "+rCell+","+cCell+" from "+dirCounts[rCell][cCell]+" to  "+sqGain+" <br>"
+													dirCounts[rCell][cCell] = sqGain
+													//output += "now dirCounts is "+dirCounts.toString()+"<br>"
+
+										} else {
+												output += "Obs "+r+"-"+c+" is "+rDir+","+cDir+" and is behind another obstacle - no Change<br>"
+
+										}
+
+					} else {
+                  output += "Obs "+r+"-"+c+" does not block the Queen <br>"
+
+					}
+
+
+
+		 })
+     //notesLabel.innerHTML += output
+    //output += "at end of Obstacles dirCounts is "+dirCounts.toString()+"<br>"
+}
+
+
+
+
+
+//position is [r][c]
+function  makeBoard(size, char) {
+	    let board = []
+
+		//create sqaures and populate
+		//note - first column is empty
+			for (let row=size; row>0;row--) {
+					board[row] = [] //put a col array in every row
+			   			for (let col=1; col<=size; col++) {
+								  //board[row][col] = row+","+col
+									  board[row][col] = char
+						  }
+			}
+      //console.log(board)
+			return board
+
+
+}
+
+function fillBoard(gameBoard) {
+	gameBoard[r_q][c_q] = " Q "
+	obstacles.forEach( pair => {
+				//output += pair+"<br>"
+				gameBoard[pair[0]][pair[1]] = pair[0]+"-"+pair[1]
+
+	})
+return gameBoard
+} //fillboard
+
+
+
+
+
+
+
+function printBoard (board) {
+
+			output += "<br>"
+			//create sqaures anfd populate
+				for (let row=board.length-1; row>0; row--) {
+						output +=  row+" "
+								for (let col=1; col<board.length; col++) {
+										output += "["+board[row][col]+"] "
+								}
+								output += "<br>"
+				}
+				// output += " . "
+        // for (let col=1; col<board.length; col++) {
+        //    output += "  . "+col+" .  "
+				// }
+				// output +=  "<br>"
+			 //label.innerHTML += output
+
+}
+
+
+
+} //quennsAttack
+
+
+
+
+
+</script>
+</center>
+</body>
+</html>
