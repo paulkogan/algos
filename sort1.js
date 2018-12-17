@@ -36,6 +36,10 @@ function bubbleSort(array) {
 } // bubble sort
 
 
+
+
+
+
 function selectionSort(array) {
                 console.log("\n\nStarting Selection Sort!")
                 console.log("The inital array is "+array.toString())
@@ -51,6 +55,7 @@ function selectionSort(array) {
                       } //j loop
                       //console.log("after pass "+i+" the smallest number is  "+smallestNumber+" in position "+smallestIndex)
 
+                      //bring the smallest over to the left
                       let temp = array[i]
                       array[i] = array[smallestIndex]
                       array[smallestIndex] = temp

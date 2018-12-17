@@ -163,41 +163,26 @@ doIt(arr1, k1)
 
 
 
-function pairsPK(arr, k) {
-  console.log("in pairsPK "+arr)
-  console.log("k is "+k)
-  let results = []
-  results.length  = 0
-
+function findPairsWithGivenDifference(arr, k) {
   // your code goes here
-  for (let i=0;i<arr.length;i++){
-      for (let j=0;j<arr.length;j++){
-				   //console.log("testing "+arr[i]+" - "+arr[j]+"="+k)
-           if(arr[i]-arr[j] === k) {
-                  console.log("adding "+arr[i]+","+arr[j])
-                  //results[j] = [arr[i], arr[j]]
-
-                  if(i < j) {
-                  //if(result[result.length-1][1]   >arr[j] ) {
-
-
-                      results.push(  [arr[i], arr[j] ])
-											console.log(i+" < "+j+ "so at end")
-                  } else {
-                      results.unshift( [arr[i], arr[j] ])
-											console.log(i+" > "+j+ "so on top")
-
-                  }
+  var result = [];
+  for(let i=0; i < arr.length; i++) {  // y
+    // console.log("Checking i", Math.abs(arr[i]))
+    // console.log("Checking j", Math.abs(arr[j]))
+    // console.log("--------")
+    for(let j=0; j < arr.length; j++) {  //y+K = x
+    if(arr[j] - arr[i] == k) {
+          result.push([arr[j], arr[i]])
+     }//if
+    } //j
+  }
+  console.log(result)
+  return result;
+}
 
 
 
-           } //if
-      } //j
-  } //i
-console.log("Results are:   "+results.join(' * '))
-return results
 
-} //function
 
 
 
